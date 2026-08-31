@@ -1,94 +1,86 @@
 # P2P Terminal Chat
 
-A peer-to-peer, end-to-end encrypted chat app that runs entirely in your
-terminal. No server, no accounts, no cloud — two people run the app on
-the same network, exchange a one-time code out of band, and talk with
-real E2E encryption the whole way.
-
-```
- ██████╗ ██████╗ ██████╗      ██████╗██╗  ██╗ █████╗ ████████╗
- ██╔══██╗╚════██╗██╔══██╗    ██╔════╝██║  ██║██╔══██╗╚══██╔══╝
- ██████╔╝ █████╔╝██████╔╝    ██║     ███████║███████║   ██║
- ██╔═══╝ ██╔═══╝ ██╔═══╝     ██║     ██╔══██║██╔══██║   ██║
- ██║     ███████╗██║         ╚██████╗██║  ██║██║  ██║   ██║
- ╚═╝     ╚══════╝╚═╝          ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝
-```
+A peer-to-peer, end-to-end encrypted terminal chat app built in Python.
+It works without a server, without accounts, and without a cloud service.
+Two people run the app on the same local network, exchange a short one-time
+code out of band, and chat directly over a secure channel.
 
 ## Features
 
-- **End-to-end encryption** — Curve25519 key exchange + XSalsa20-Poly1305
-  authenticated encryption via PyNaCl (libsodium). Keys are ephemeral,
-  generated fresh every run; there's no account or long-term identity.
-- **Zero-infrastructure discovery** — the host generates a short one-time
-  code; the joiner enters it and the app finds the host via a UDP
-  broadcast on the LAN, matched by a fingerprint of the code (the raw
-  code itself is never sent over the network).
-- **No server, ever** — once discovery finds the peer, it's a direct
-  TCP socket between the two machines. If broadcast is blocked on your
-  network, you can also connect directly with `CODE@ip:port`.
-- **Polished terminal UI** — built with [Textual](https://textual.textualize.io/):
-  animated fade-in chat bubbles, a live "peer is typing…" indicator, a
-  pulsing "encrypted" status bar, and connection spinners.
-- **File transfer** — `/sendfile <path>` streams a file to your peer in
-  encrypted chunks; received files land in `received_files/`.
+- End-to-end encryption using Curve25519 and NaCl
+- Same-network peer discovery via UDP broadcast
+- Direct TCP connection after pairing
+- Textual terminal user interface
+- Encrypted file transfer
+- No persistent identity or central server
 
-## Install
+## How it works
+
+1. One user hosts a chat session.
+2. The host generates a short one-time code.
+3. The other user joins using that code.
+4. The app discovers the host on the local network.
+5. A direct encrypted connection is established.
+6. Messages and files are sent securely between the two peers.
+
+## Requirements
+
+- Python 3.10+
+- pip
+
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Needs Python 3.10+.
+## Run the app
 
-## Run
-
-On each machine:
+From the project folder:
 
 ```bash
 python main.py
 ```
 
-1. One person picks **Host a chat** — they'll be shown a short code
-   (e.g. `7F3KQD`) and the app starts listening.
-2. They share that code with their peer *any way except through this
-   app* — say it out loud, text it, whatever.
-3. The other person picks **Join a chat**, types the code in, and the
-   app finds the host over the LAN and connects.
-4. Chat. Both sides see a green "🔒 Encrypted" status bar and a short
-   fingerprint of the other side's key — if you want to be paranoid
-   about a LAN attacker swapping keys, read the fingerprint aloud to
-   each other and compare.
+Then choose:
+- Host a chat
+- Join a chat
 
-If UDP broadcast is blocked on your network (some corporate/guest
-Wi-Fi does this), the joiner can instead type `CODE@192.168.1.12:51712`
-using the host's IP and port shown after they connect.
+## File transfer
 
-### In the chat
+Use the chat command:
 
-- Just type and hit enter to send a message.
-- `/sendfile /path/to/file` sends a file to your peer.
-- `/quit` or `Ctrl+C` exits.
-
-## How it works
-
-```
-crypto_utils.py   Curve25519 keypairs, one-time codes, NaCl Box encryption
-discovery.py      UDP broadcast discovery, matched by code fingerprint
-network.py        Asyncio TCP framing, handshake, encrypted PeerConnection
-ui.py             Textual TUI: welcome / host / join / chat screens + animation
-main.py           Entry point
+```text
+/sendfile C:\path\to\file.txt
 ```
 
-Nothing is written to disk except files you explicitly `/sendfile` (or
-receive), and there's no persistent identity — every run generates a
-brand-new keypair, so there's nothing to leak or reuse across sessions.
+Incoming files are saved to the user's Downloads folder when possible, with a
+local fallback if needed.
 
-## Limitations
+## Current limitations
 
-- Discovery only works on the same broadcast domain (same Wi-Fi/LAN
-  segment) — this is by design ("same network"), not a bug. For chat
-  across different networks you'd need port forwarding / a relay,
-  which is intentionally out of scope for a zero-infrastructure app.
-- It's a 1:1 chat — one host, one joiner, no group chat.
-- No message persistence — closing the app clears history, as there's
-  no server or account to sync it from.
+- This is a 1:1 chat app, not a group chat app.
+- Discovery works only on the same LAN / broadcast domain.
+- No message history is stored on a server.
+- There is no account system or remote relay.
+
+## Project structure
+
+```text
+main.py
+ui.py
+network.py
+discovery.py
+crypto_utils.py
+requirements.txt
+README.md
+```
+
+## Security note
+
+This app is intended for local, same-network use with ephemeral keys. It does
+not provide long-term identity, central storage, or multi-user room logic.
+
+## License
+
+This project is provided as-is for learning and experimentation.

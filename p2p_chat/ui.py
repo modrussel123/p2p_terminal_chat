@@ -34,7 +34,33 @@ import crypto_utils
 import discovery
 import network
 
-RECEIVED_DIR = Path("received_files")
+
+def get_received_dir() -> Path:
+    """Return the download directory for incoming files.
+
+    Prefer the user's Downloads folder for a normal desktop experience,
+    but fall back to a project-local `received_files` directory if that
+    cannot be created.
+    """
+    candidates: list[Path] = []
+
+    if os.name == "nt":
+        downloads = Path.home() / "Downloads" / "p2p_terminal_chat"
+        candidates.append(downloads)
+
+    candidates.append(Path.cwd() / "received_files")
+
+    for candidate in candidates:
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+            return candidate
+        except OSError:
+            continue
+
+    return Path.cwd() / "received_files"
+
+
+RECEIVED_DIR = get_received_dir()
 
 BANNER = r"""[bold cyan]
  ██████╗ ██████╗ ██████╗      ██████╗██╗  ██╗ █████╗ ████████╗
@@ -453,12 +479,14 @@ class ChatScreen(Screen):
             info = self._incoming_files.pop(fname, None)
             if info is None:
                 return
-            RECEIVED_DIR.mkdir(exist_ok=True)
-            out_path = RECEIVED_DIR / fname
+
+            incoming_dir = get_received_dir()
+            safe_name = Path(fname).name
+            out_path = incoming_dir / safe_name
             with open(out_path, "wb") as fh:
                 for chunk in info["chunks"]:
                     fh.write(chunk or b"")
-            self.post_system_message(f"[green]Received {fname} -> {out_path}[/]")
+            self.post_system_message(f"[green]Received {safe_name} -> {out_path}[/]")
 
     def handle_disconnect(self) -> None:
         if not self.connected:
