@@ -5,6 +5,14 @@ It works without a server, without accounts, and without a cloud service.
 Two people run the app on the same local network, exchange a short one-time
 code out of band, and chat directly over a secure channel.
 
+## Demo
+
+![Welcome screen](images/welcome.png)
+
+![Host screen](images/host.png)
+
+![Join screen](images/join.png)
+
 ## Features
 
 - End-to-end encryption using Curve25519 and NaCl
