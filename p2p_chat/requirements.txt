@@ -1,0 +1,2 @@
+textual>=0.58
+pynacl>=1.5
