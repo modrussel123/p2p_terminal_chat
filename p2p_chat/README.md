@@ -13,6 +13,7 @@ code out of band, and chat directly over a secure channel.
 
 ![Join screen](images/join.png)
 
+![Join screen](images/palette.png)
 ## Features
 
 - End-to-end encryption using Curve25519 and NaCl
